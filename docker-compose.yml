@@ -20,9 +20,10 @@ x-airflow-common: &airflow-common
     POSTGRES_USER: ${POSTGRES_USER}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   volumes:
-    - ./airflow/dags:/opt/airflow/dags # your DAG files
-    - ./airflow/logs:/opt/airflow/logs # airflow task logs
-    - ./airflow/plugins:/opt/airflow/plugins # optional custom plugins
+    - ./airflow/dags:/opt/airflow/dags
+    - ./airflow/logs:/opt/airflow/logs
+    - ./airflow/plugins:/opt/airflow/plugins
+    - ./scripts:/opt/airflow/scripts
   depends_on:
     postgres:
       condition: service_healthy

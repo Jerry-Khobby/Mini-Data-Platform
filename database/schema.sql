@@ -1,6 +1,3 @@
-----creating databases
-CREATE DATABASE metabase;
-
 
 -- Core tables
 

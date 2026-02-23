@@ -4,57 +4,65 @@ from minio import Minio
 from minio.error import S3Error
 from dotenv import load_dotenv
 
-# Setup
 load_dotenv()
 
-# Console logger
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-# Environment variables
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
-MINIO_ACCESS_KEY = os.getenv("MINIO_ROOT_USER")
-MINIO_SECRET_KEY = os.getenv("MINIO_ROOT_PASSWORD")
-MINIO_BUCKET = os.getenv("MINIO_BUCKET")
-LOCAL_FILE_PATH = "data/sales.csv"
-OBJECT_NAME = "sales.csv"
 
-# Validate environment variables
-for var_name, value in {
-    "MINIO_ENDPOINT": MINIO_ENDPOINT,
-    "MINIO_ACCESS_KEY": MINIO_ACCESS_KEY,
-    "MINIO_SECRET_KEY": MINIO_SECRET_KEY,
-    "MINIO_BUCKET": MINIO_BUCKET,
-}.items():
-    if not value:
-        raise EnvironmentError(f"Missing required environment variable: {var_name}")
+def get_minio_client(
+    endpoint: str = None,
+    access_key: str = None,
+    secret_key: str = None,
+    secure: bool = False
+) -> Minio:
+    """Create and return a MinIO client."""
+    endpoint   = endpoint   or os.getenv("MINIO_ENDPOINT")
+    access_key = access_key or os.getenv("MINIO_ROOT_USER")
+    secret_key = secret_key or os.getenv("MINIO_ROOT_PASSWORD")
 
+    if not all([endpoint, access_key, secret_key]):
+        raise EnvironmentError("Missing MinIO connection environment variables.")
 
-# MinIO client
-client = Minio(
-    MINIO_ENDPOINT,
-    access_key=MINIO_ACCESS_KEY,
-    secret_key=MINIO_SECRET_KEY,
-    secure=False  # Set True if using HTTPS
-)
-
-# Ensure bucket exists
-if not client.bucket_exists(MINIO_BUCKET):
-    logger.info(f"Bucket '{MINIO_BUCKET}' does not exist. Creating it...")
-    client.make_bucket(MINIO_BUCKET)
-else:
-    logger.info(f"Bucket '{MINIO_BUCKET}' already exists.")
+    return Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=secure)
 
 
-# Upload file
-try:
-    client.fput_object(
-        bucket_name=MINIO_BUCKET,
-        object_name=OBJECT_NAME,
-        file_path=LOCAL_FILE_PATH
-    )
-    logger.info(f"Successfully uploaded '{LOCAL_FILE_PATH}' → '{MINIO_BUCKET}/{OBJECT_NAME}'")
-except FileNotFoundError:
-    logger.error(f"Local file '{LOCAL_FILE_PATH}' not found.")
-except S3Error as e:
-    logger.error(f"Failed to upload '{LOCAL_FILE_PATH}' to MinIO: {e}")
+def ensure_bucket_exists(client: Minio, bucket: str) -> None:
+    """Create the bucket if it doesn't already exist."""
+    if not client.bucket_exists(bucket):
+        client.make_bucket(bucket)
+        logger.info(f"Bucket '{bucket}' created.")
+    else:
+        logger.info(f"Bucket '{bucket}' already exists.")
+
+
+def upload_file_to_minio(
+    local_path: str,
+    object_name: str,
+    bucket: str = None,
+    client: Minio = None
+) -> None:
+    """
+    Upload a local file to MinIO.
+
+    Args:
+        local_path:  Path to the local file e.g. 'data/sales.csv'
+        object_name: Name to store it as in MinIO e.g. 'sales.csv'
+        bucket:      Target bucket (falls back to MINIO_BUCKET env var)
+        client:      Existing Minio client (creates one if not provided)
+    """
+    bucket = bucket or os.getenv("MINIO_BUCKET")
+    if not bucket:
+        raise EnvironmentError("Missing MINIO_BUCKET environment variable.")
+
+    client = client or get_minio_client()
+    ensure_bucket_exists(client, bucket)
+
+    try:
+        client.fput_object(bucket_name=bucket, object_name=object_name, file_path=local_path)
+        logger.info(f"Uploaded '{local_path}' → '{bucket}/{object_name}'")
+    except FileNotFoundError:
+        logger.error(f"Local file '{local_path}' not found.")
+        raise
+    except S3Error as e:
+        logger.error(f"MinIO upload failed: {e}")
+        raise

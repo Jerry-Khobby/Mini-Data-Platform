@@ -9,8 +9,15 @@ RUN apt-get update && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# Switch back to airflow user
 USER airflow
 
+# Set working directory for your project
+WORKDIR /opt/project
+
+
+ENV PYTHONPATH="/opt/project"
+
 # Copy and install Python dependencies
-COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt

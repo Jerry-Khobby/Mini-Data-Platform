@@ -1,6 +1,6 @@
 x-airflow-common: &airflow-common
   build:
-    context: ./airflow
+    context: .
     dockerfile: Dockerfile
   env_file: .env
   environment:
@@ -20,10 +20,10 @@ x-airflow-common: &airflow-common
     POSTGRES_USER: ${POSTGRES_USER}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   volumes:
+    - .:/opt/project
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/plugins:/opt/airflow/plugins
-    - ./scripts:/opt/airflow/scripts
   depends_on:
     postgres:
       condition: service_healthy
@@ -99,20 +99,18 @@ services:
     container_name: platform-airflow-init
     command: >
       bash -c "
-        airflow db migrate &&
-        airflow users create \
-          --username admin \
-          --password admin \
-          --firstname Admin \
-          --lastname User \
-          --role Admin \
-          --email admin@example.com || true
+      airflow db migrate &&
+      airflow users create
+      --username admin
+      --password admin
+      --firstname Admin
+      --lastname User
+      --role Admin
+      --email admin@example.com || true
       "
     restart: "no"
 
-  # -----------------------------------------------------------
   # 3a. Airflow Webserver
-  # -----------------------------------------------------------
   airflow-webserver:
     <<: *airflow-common
     container_name: platform-airflow-webserver
@@ -128,9 +126,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # -----------------------------------------------------------
   # 3b. Airflow Scheduler
-  # -----------------------------------------------------------
   airflow-scheduler:
     <<: *airflow-common
     container_name: platform-airflow-scheduler

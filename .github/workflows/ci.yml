@@ -52,5 +52,5 @@ jobs:
       # ----------------------------
       - name: Validate DAG imports
         run: |
-          export PYTHONPATH = $PYTHONPATH:$(pwd)
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
           python -c "import airflow_project.dags.sales_pipeline"

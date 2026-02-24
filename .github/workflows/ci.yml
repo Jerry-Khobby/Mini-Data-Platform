@@ -52,4 +52,4 @@ jobs:
       # ----------------------------
       - name: Validate DAG imports
         run: |
-          python -c "import dags.sales_pipeline"
+          python -c "import airflow.dags.sales_pipeline"

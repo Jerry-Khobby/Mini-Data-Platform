@@ -44,7 +44,7 @@ jobs:
       # ----------------------------
       - name: Run pytest
         run: |
-          pip install pytest
+          pip install pytest pytest-cov
           pytest tests/ -v --cov=scripts --cov-report=term-missing
 
       # ----------------------------

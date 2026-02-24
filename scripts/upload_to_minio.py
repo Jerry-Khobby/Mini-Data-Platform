@@ -66,3 +66,26 @@ def upload_file_to_minio(
     except S3Error as e:
         logger.error(f"MinIO upload failed: {e}")
         raise
+      
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s"
+    )
+
+    try:
+        LOCAL_FILE = os.getenv("LOCAL_DATA_PATH", "data/sales.csv")
+        OBJECT_NAME = os.path.basename(LOCAL_FILE)
+
+        logger.info("Starting MinIO upload process...")
+
+        upload_file_to_minio(
+            local_path=LOCAL_FILE,
+            object_name=OBJECT_NAME
+        )
+
+        logger.info("Upload completed successfully.")
+
+    except Exception as e:
+        logger.exception("Upload process failed.")
+        raise

@@ -42,7 +42,7 @@ def validate_sales_file(input_path: str, output_path: str):
     df.dropna(subset=["order_id", "sale_amount", "sale_date"], inplace=True)
     df = df[df["sale_amount"] > 0]
     
-    duplicate_count = df.duplicated(subset=["order_id"]).sum()
+    duplicated_count = df.duplicated(subset=["order_id"]).sum()
     if duplicated_count>0: 
         logger.warning(f"Dropping {duplicate_count} duplicate rows based on 'order_id'")
         df = df.drop_duplicates(subset=["order_id"])

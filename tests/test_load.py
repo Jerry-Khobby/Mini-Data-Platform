@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from scripts.process_and_load import load_sales_to_postgres
+from sqlalchemy import text
 
 
 def test_load_is_idempotent(tmp_path):

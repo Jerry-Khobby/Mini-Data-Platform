@@ -14,20 +14,21 @@ jobs:
       packages: write
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      # Step 3: Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/sales-etl:latest .
+          docker build -t ghcr.io/jerry-khobby/mini-data-platform/sales-etl:latest .
 
+      # Step 4: Push Docker image to GitHub Container Registry
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}/sales-etl:latest
-
-
-
-
+          docker push ghcr.io/jerry-khobby/mini-data-platform/sales-etl:latest

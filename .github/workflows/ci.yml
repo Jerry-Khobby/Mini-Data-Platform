@@ -45,7 +45,7 @@ jobs:
       - name: Run pytest
         run: |
           pip install pytest
-          pytest -v
+          pytest tests/ -v --cov=scripts --cov-report=term-missing
 
       # ----------------------------
       # Validate Airflow DAG Import

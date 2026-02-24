@@ -7,5 +7,12 @@ requires-python = ">=3.11"
 dependencies = [
     "faker>=40.4.0",
     "minio>=7.2.20",
+    "pandas>=3.0.1",
     "python-dotenv>=1.2.1",
+    "sqlalchemy>=2.0.46",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
 ]

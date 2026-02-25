@@ -20,53 +20,53 @@ def download_from_minio(client, bucket: str, object_name: str, local_path: str):
     logger.info(f"Downloaded {object_name} → {local_path}")
 
 
-#  Validate
-def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: float | None=None):
+def validate_sales_file(
+    input_path: str,
+    output_path: str,
+    max_invalid_ratio: float | None = None,
+):
     df = pd.read_csv(input_path)
 
-    total_rows = len(df)
-    if total_rows == 0:
+    # Fail only if file truly has no rows AND no columns
+    if df.empty and len(df.columns) == 0:
         raise ValueError("Dataset is empty. Failing pipeline.")
 
+    total_rows = len(df)
     logger.info(f"Validation started | rows={total_rows}")
 
-        # Schema Validation-
+    # Schema Validation (allow extra columns)
     missing_cols = set(EXPECTED_COLUMNS) - set(df.columns)
     if missing_cols:
-        raise ValueError(f"Missing required columns:{missing_cols}")
+        raise ValueError(f"Missing required columns: {missing_cols}")
 
-    df = df[EXPECTED_COLUMNS]  # enforce column order
+    # Enforce column selection & order
+    df = df[EXPECTED_COLUMNS].copy()
 
-
-    #  Type Enforcement
+    # Type Enforcement
     df["sale_date"] = pd.to_datetime(df["sale_date"], errors="coerce")
     df["sale_amount"] = pd.to_numeric(df["sale_amount"], errors="coerce")
 
-    # Domain & Business Rules
+    # Domain & Business Rules (deterministic only)
     validation_mask = (
-        df["order_id"].notna() &
-        df["sale_amount"].notna() &
-        df["sale_amount"] > 0 &
-        df["sale_date"].notna() &
-        (df["sale_date"] <= pd.Timestamp.now()) &
-        df["product"].isin(VALID_PRODUCTS) &
-        df["category"].isin(VALID_CATEGORIES) &
-        df["region"].isin(VALID_REGIONS)
+        df["order_id"].notna()
+        & df["sale_amount"].notna()
+        & (df["sale_amount"] > 0)
+        & df["sale_date"].notna()
+        & df["product"].isin(VALID_PRODUCTS)
+        & df["category"].isin(VALID_CATEGORIES)
+        & df["region"].isin(VALID_REGIONS)
     )
 
     valid_df = df[validation_mask].copy()
     invalid_df = df[~validation_mask].copy()
 
+    # Remove duplicates (idempotent logic)
+    before_dedup = len(valid_df)
+    valid_df = valid_df.drop_duplicates(subset=["order_id"], keep="first")
+    duplicates_removed = before_dedup - len(valid_df)
 
-    # Uniqueness Constraint
-    duplicate_mask = valid_df.duplicated(subset=["order_id"], keep="first")
-    duplicates = valid_df[duplicate_mask]
-    valid_df = valid_df[~duplicate_mask]
-
-
-    #  Metrics & Threshold Check
-    invalid_count = len(invalid_df) + len(duplicates)
-    invalid_ratio = invalid_count / total_rows
+    invalid_count = len(invalid_df) + duplicates_removed
+    invalid_ratio = invalid_count / total_rows if total_rows > 0 else 0
 
     logger.info(f"Valid rows={len(valid_df)}")
     logger.info(f"Invalid rows={invalid_count}")
@@ -77,7 +77,8 @@ def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: fl
             f"Validation failed. Invalid ratio {invalid_ratio:.2%} "
             f"exceeds threshold {max_invalid_ratio:.2%}"
         )
-    # Save Validated Data
+
+    # Save clean deterministic output
     valid_df.to_csv(output_path, index=False)
     logger.info(f"Validated dataset saved → {output_path}")
 

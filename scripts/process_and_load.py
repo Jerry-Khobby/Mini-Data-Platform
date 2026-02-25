@@ -21,34 +21,67 @@ def download_from_minio(client, bucket: str, object_name: str, local_path: str):
 
 
 #  Validate
-def validate_sales_file(input_path: str, output_path: str):
+def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: float = 0.05):
     df = pd.read_csv(input_path)
+
     total_rows = len(df)
-    
-    if total_rows ==0:
-      raise ValueError("Dataset is empty. Failing pipeline")
-    logger.info(f"Starting validation:{total_rows} rows")
+    if total_rows == 0:
+        raise ValueError("Dataset is empty. Failing pipeline.")
 
-    missing_cols = [c for c in EXPECTED_COLUMNS if c not in df.columns]
-    extra_cols =[c for c in df.columns if c not in EXPECTED_COLUMNS]
-    if missing_cols:
-        raise ValueError(f"Missing columns: {missing_cols}")
-    if extra_cols:
-      logger.warning(f"Unexpected extra columns:{extra_cols}")
+    logger.info(f"Validation started | rows={total_rows}")
 
+        # Schema Validation-
+    if set(df.columns) != set(EXPECTED_COLUMNS):
+        raise ValueError(
+            f"Schema mismatch. Expected columns={EXPECTED_COLUMNS}, "
+            f"Found columns={list(df.columns)}"
+        )
+
+    df = df[EXPECTED_COLUMNS]  # enforce column order
+
+
+    #  Type Enforcement
     df["sale_date"] = pd.to_datetime(df["sale_date"], errors="coerce")
     df["sale_amount"] = pd.to_numeric(df["sale_amount"], errors="coerce")
 
-    df.dropna(subset=["order_id", "sale_amount", "sale_date"], inplace=True)
-    df = df[df["sale_amount"] > 0]
-    
-    duplicate_count = df.duplicated(subset=["order_id"]).sum()
-    if duplicate_count>0: 
-        logger.warning(f"Dropping {duplicate_count} duplicate rows based on 'order_id'")
-        df = df.drop_duplicates(subset=["order_id"])
+    # Domain & Business Rules
+    validation_mask = (
+        df["order_id"].notna() &
+        df["sale_amount"].notna() &
+        df["sale_amount"] > 0 &
+        df["sale_date"].notna() &
+        (df["sale_date"] <= pd.Timestamp.now()) &
+        df["product"].isin(VALID_PRODUCTS) &
+        df["category"].isin(VALID_CATEGORIES) &
+        df["region"].isin(VALID_REGIONS)
+    )
 
-    df.to_csv(output_path, index=False)
-    logger.info(f"Validated file saved → {output_path}")
+    valid_df = df[validation_mask].copy()
+    invalid_df = df[~validation_mask].copy()
+
+
+    # Uniqueness Constraint
+    duplicate_mask = valid_df.duplicated(subset=["order_id"], keep="first")
+    duplicates = valid_df[duplicate_mask]
+    valid_df = valid_df[~duplicate_mask]
+
+
+    #  Metrics & Threshold Check
+    invalid_count = len(invalid_df) + len(duplicates)
+    invalid_ratio = invalid_count / total_rows
+
+    logger.info(f"Valid rows={len(valid_df)}")
+    logger.info(f"Invalid rows={invalid_count}")
+    logger.info(f"Invalid ratio={invalid_ratio:.2%}")
+
+    if invalid_ratio > max_invalid_ratio:
+        raise ValueError(
+            f"Validation failed. Invalid ratio {invalid_ratio:.2%} "
+            f"exceeds threshold {max_invalid_ratio:.2%}"
+        )
+    # Save Validated Data
+    valid_df.to_csv(output_path, index=False)
+    logger.info(f"Validated dataset saved → {output_path}")
 
 
 

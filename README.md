@@ -138,10 +138,8 @@ generate → upload → download → validate → load
 
 Add screenshots here:
 
-```
-![Sales Overview Dashboard](docs/images/dashboard_overview.png)
-![Regional Sales Breakdown](docs/images/dashboard_region.png)
-```
+![Sales Overview Dashboard](docs/meta-base.png)
+![Regional Sales Breakdown](docs/meta-base-1.png)
 
 Recommended dashboard metrics:
 
@@ -173,10 +171,10 @@ pytest tests/ -v --cov=scripts
 ```
 
 Add screenshot:
+![Test Results](docs/data-test-1.png)
+![Test Results](docs/data-test-2.png)
+![Test Results](docs/data-test-3.png)
 
-```
-![Test Results](docs/images/test_results.png)
-```
 
 # How to Run the Platform
 
@@ -200,7 +198,7 @@ docker compose version
 ## 1. Clone the Repository
 
 ```
-git clone <repo-url>
+git clone https://github.com/Jerry-Khobby/Mini-Data-Platform
 cd Mini-Data-Platform
 ```
 
@@ -446,9 +444,7 @@ Pipeline fails if:
 
 Add badge:
 
-```
-![CI](https://github.com/<user>/<repo>/actions/workflows/ci.yml/badge.svg)
-```
+![CI](https://github.com/Jerry-Khobby/Mini-Data-Platform/actions/workflows/ci.yml/badge.svg)
 
 ---
 

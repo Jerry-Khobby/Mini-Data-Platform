@@ -19,7 +19,9 @@ from scripts.process_and_load import (
 
 # Configuration
 RAW_PATH = "/tmp/sales_raw.csv"
+RAW_LOCAL = "/scripts/data/sales_raw.csv"
 VALIDATED_PATH = "/tmp/sales_validated.csv"
+LOCAL_VALIDATED_PATH = "/scripts/data/sales_validated.csv"
 OBJECT_NAME = "sales.csv"
 BUCKET = os.getenv("MINIO_BUCKET")
 
@@ -90,6 +92,7 @@ with DAG(
         validate_sales_file(
             input_path=RAW_PATH,
             output_path=VALIDATED_PATH,
+            max_invalid_ratio=0.05
         )
 
     validate = PythonOperator(

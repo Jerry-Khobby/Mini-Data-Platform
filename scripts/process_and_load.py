@@ -21,7 +21,7 @@ def download_from_minio(client, bucket: str, object_name: str, local_path: str):
 
 
 #  Validate
-def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: float = 0.05):
+def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: float | None=None):
     df = pd.read_csv(input_path)
 
     total_rows = len(df)
@@ -31,11 +31,9 @@ def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: fl
     logger.info(f"Validation started | rows={total_rows}")
 
         # Schema Validation-
-    if set(df.columns) != set(EXPECTED_COLUMNS):
-        raise ValueError(
-            f"Schema mismatch. Expected columns={EXPECTED_COLUMNS}, "
-            f"Found columns={list(df.columns)}"
-        )
+    missing_cols = set(EXPECTED_COLUMNS) - set(df.columns)
+    if missing_cols:
+        raise ValueError(f"Missing required columns:{missing_cols}")
 
     df = df[EXPECTED_COLUMNS]  # enforce column order
 
@@ -74,7 +72,7 @@ def validate_sales_file(input_path: str, output_path: str, max_invalid_ratio: fl
     logger.info(f"Invalid rows={invalid_count}")
     logger.info(f"Invalid ratio={invalid_ratio:.2%}")
 
-    if invalid_ratio > max_invalid_ratio:
+    if max_invalid_ratio is not None and invalid_ratio > max_invalid_ratio:
         raise ValueError(
             f"Validation failed. Invalid ratio {invalid_ratio:.2%} "
             f"exceeds threshold {max_invalid_ratio:.2%}"

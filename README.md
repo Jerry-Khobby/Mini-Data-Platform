@@ -135,11 +135,8 @@ generate → upload → download → validate → load
 ---
 
 # Dashboard Preview
+[View Sales Dashboard (PDF)](./docs/Metabase%20-%20Sales%20Overview%20Dashboard.pdf)
 
-Add screenshots here:
-
-![Sales Overview Dashboard](docs/meta-base.png)
-![Regional Sales Breakdown](docs/meta-base-1.png)
 
 Recommended dashboard metrics:
 
@@ -172,7 +169,11 @@ pytest tests/ -v --cov=scripts
 
 Add screenshot:
 ![Test Results](docs/data-test-1.png)
+
+
 ![Test Results](docs/data-test-2.png)
+
+
 ![Test Results](docs/data-test-3.png)
 
 

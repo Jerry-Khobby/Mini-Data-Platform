@@ -135,6 +135,13 @@ generate → upload → download → validate → load
 ---
 
 # Dashboard Preview
+
+Preview:
+![Sales Overview](./docs/meta-base.png)
+
+![Sales Overview](./docs/meta-base-1.png)
+
+Full interactive export:
 [View Sales Dashboard (PDF)](./docs/Metabase%20-%20Sales%20Overview%20Dashboard.pdf)
 
 

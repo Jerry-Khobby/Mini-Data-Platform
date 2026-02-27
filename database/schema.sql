@@ -58,3 +58,16 @@ FROM sales GROUP BY region ORDER BY avg_order_value DESC;
 CREATE OR REPLACE VIEW vw_daily_sales AS
 SELECT sale_date::date AS day, ROUND(SUM(sale_amount)::numeric, 2) AS total_revenue, COUNT(*) AS orders
 FROM sales GROUP BY day ORDER BY day;
+
+
+
+CREATE TABLE etl_monitoring (
+    run_id SERIAL PRIMARY KEY,
+    run_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_rows INT,
+    valid_rows INT,
+    invalid_rows INT,
+    invalid_ratio FLOAT,
+    load_duration_seconds FLOAT,
+    status VARCHAR(20)
+);

@@ -81,6 +81,13 @@ def validate_sales_file(
     # Save clean deterministic output
     valid_df.to_csv(output_path, index=False)
     logger.info(f"Validated dataset saved → {output_path}")
+    
+    return {
+        "total_rows":total_rows,
+        "valid_rows": len(valid_df),
+        "invalid_rows": invalid_count,
+        "invalid_ratio": invalid_ratio
+    }
 
 
 

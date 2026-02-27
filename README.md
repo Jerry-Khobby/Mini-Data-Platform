@@ -109,7 +109,7 @@ DAG: `sales_etl_pipeline`
 Pipeline sequence:
 
 ```
-generate → upload → download → validate → load
+generate → upload → download → validate → load → Monitor
 ```
 
 ### Validation Stage Includes:
@@ -316,7 +316,7 @@ docker compose logs -f airflow-webserver
 Pipeline stages:
 
 ```
-generate → upload → download → validate → load
+generate → upload → download → validate → load → monitor
 ```
 
 ---
@@ -351,6 +351,40 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 pytest tests/ -v --cov=scripts
 ```
+
+
+## 7a. Run Tests Inside Docker
+
+To run tests inside the Airflow container:
+
+1. Enter the Airflow webserver container:
+
+```
+docker exec -it platform-airflow-webserver bash
+```
+
+2. Install testing dependencies inside the container:
+
+```
+pip install pytest psycopg2-binary
+```
+
+3. Run your monitoring tests:
+
+```
+pytest /opt/project/tests/test_monitoring_inserts.py -v
+```
+
+4. (Optional) Run all tests:
+
+```
+pytest /opt/project/tests/ -v
+```
+
+Notes:
+
+* Make sure the PostgreSQL service is running and the database/schema exists (`etl_monitoring` table should be present).
+* Dependencies installed this way are temporary; if the container is recreated, they need to be reinstalled.
 
 ---
 
@@ -498,16 +532,8 @@ Prevents:
 
 ---
 
-# Future Improvements
 
-* Persist data quality metrics in a monitoring table
-* Implement dead-letter bucket for rejected records
-* Integrate Great Expectations
-* Introduce dbt transformation layer
-* Add streaming ingestion (Kafka)
-* Implement alerting for validation failures
 
----
 
 # Summary
 

@@ -14,42 +14,7 @@ A fully containerized end-to-end data platform built using:
 
 ## System Architecture
 
-```
-                ┌───────────────┐
-                │  Data Generator│
-                │  (Python/Faker)│
-                └───────┬───────┘
-                        │
-                        ▼
-                ┌───────────────┐
-                │     MinIO      │
-                │  Object Store  │
-                └───────┬───────┘
-                        │
-                        ▼
-                ┌───────────────┐
-                │    Airflow     │
-                │   ETL Pipeline  │
-                └───────┬───────┘
-                        │
-                        ▼
-                ┌───────────────┐
-                │  PostgreSQL    │
-                │   Data Store    │
-                └───────┬───────┘
-                        │
-                        ▼
-                ┌───────────────┐
-                │   Metabase     │
-                │   Dashboards   │
-                └───────────────┘
-```
-
-Replace this diagram with your exported architecture image:
-
-```
-![Architecture Diagram](docs/images/architecture.png)
-```
+![Architecture Diagram](docs/mini_data_platform.png)
 
 ---
 

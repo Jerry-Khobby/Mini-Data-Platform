@@ -497,9 +497,6 @@ Prevents:
 
 ---
 
-
-
-
 # Summary
 
 This project demonstrates the design and implementation of a production-style data platform with:
@@ -509,5 +506,3 @@ This project demonstrates the design and implementation of a production-style da
 * Controlled data loading
 * Business-facing dashboards
 * Automated CI/CD validation
-
-

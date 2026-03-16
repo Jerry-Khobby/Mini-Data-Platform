@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 fake = Faker()
 
 def generate_sales(
-    num_rows: int = 1000,
+    num_rows: int = 10000,
     output_path: str = "data/sales.csv",
     start_date: str = "-1y",
     end_date: str = "now",

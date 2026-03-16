@@ -21,7 +21,6 @@ x-airflow-common: &airflow-common
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   volumes:
     - .:/opt/project
-    - ./jars:/opt/project/jars
     - ./orchestration/dags:/opt/airflow/dags
     - ./orchestration/logs:/opt/airflow/logs
     - ./orchestration/plugins:/opt/airflow/plugins
